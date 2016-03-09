@@ -1,0 +1,8 @@
+% (boolean? #t)
+#t
+% (boolean? 3)
+#f
+% (if #t 1 2)
+1
+% (if #f 1 2)
+2

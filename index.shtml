@@ -1,0 +1,746 @@
+<!--#include virtual="header.html" -->
+
+<h1 class="title">Project 4 - Scheme Parser & Interpreter</h1>
+<center>
+Due 11:59pm November 9th, 2015 (Monday)<br>
+</center>
+
+<h2>Introduction</h2>
+
+<p>
+In this project, you will write an interpreter for a tiny subset of
+the <a href="http://en.wikipedia.org/wiki/Scheme_(programming_language)">Scheme</a>
+programming language.  As part of the project, you will also write a
+parser that translates a plain text Scheme program into an abstract
+syntax tree (AST), and an evaluator that executes the
+code represented as an AST.
+
+<p>
+For a quick introduction to Scheme, check out these <a
+href =
+"http://courses.cs.washington.edu/courses/cse341/04wi/lectures/12-scheme.html">lecture
+notes</a>.
+In order to test your project can try running small Scheme programs online 
+at repl.it
+<a href="http://repl.it/languages/Scheme">here</a>.
+<p>
+If you want to find out more about Scheme, you can download the 
+<a href="http://www.r6rs.org">Revised<sup>6</sup> Report on the Algorithmic
+Language Scheme</a>.  You may also try <a
+href="http://ds26gte.github.io/tyscheme/index.html">Teach
+Yourself Scheme in Fixnum Days</a>.
+
+<p>
+For purposes of this project, <b>we will only test your interpreter
+with valid input</b>.  Thus your code may do whatever you want on a
+bad input.  We do, however, recommend adding reasonable error handling
+code to your project for cases of malformed or otherwise incorrect
+Scheme input, because it will make developing your project easier.  As
+you are testing your program, you may inadvertently create incorrect
+input data; substantial time may be lost in trying to debug the
+program, only to find a few mistyped characters in your input data are
+the source of the problem.
+
+<p>
+Also, even though you need all of these pieces written to have a
+"complete" Scheme interpreter, we've structured the project so that
+you can work on any of the separate phases independently and test them
+on their own.  So if you get stuck on an earlier part of the project,
+you can still move on to a later part.
+
+<h2>Getting Started</h2>
+
+Download the following archive file <a href="p4.zip">p4.zip</a>
+and extract its contents.
+<p>
+
+Along with files used to make direct submissions to the
+submit server (submit.jar,
+<a href=".submit">.submit</a>,
+<a href="submit.rb">submit.rb</a>), you will
+find the following project files:
+</p><ul>
+<li>Your Scheme program - <a href="schemeTest.txt">schemeTest.txt</a>
+<li>Your OCaml program - <a href="scheme.ml">scheme.ml</a>
+
+</li><li>Public tests
+<ul>
+<li><a href="public_schemeTest.in">public_schemeTest.in</a>
+<li><a href="public_parse1.ml">public_parse1.ml</a>
+<li><a href="public_parse2.ml">public_parse2.ml</a>
+<li><a href="public_expr.ml">public_expr.ml</a>
+<li><a href="public_builtin.ml">public_builtin.ml</a>
+<li><a href="public_lists.ml">public_lists.ml</a>
+<li><a href="public_define.ml">public_define.ml</a>
+<li><a href="public_lambda.ml">public_lambda.ml</a>
+<li><a href="public_dynamic.ml">public_dynamic.ml</a>
+</ul>
+</li><li>Expected outputs for public tests 
+<ul>
+<li><a href="public_schemeTest.out">public_schemeTest.out</a>
+<li><a href="public_parse1.out">public_parse1.out</a>
+<li><a href="public_parse2.out">public_parse2.out</a>
+<li><a href="public_expr.out">public_expr.out</a>
+<li><a href="public_builtin.out">public_builtin.out</a>
+<li><a href="public_lists.out">public_lists.out</a>
+<li><a href="public_define.out">public_define.out</a>
+<li><a href="public_lambda.out">public_lambda.out</a>
+<li><a href="public_dynamic.out">public_dynamic.out</a>
+</ul>
+</li><li>Utility Code
+<ul>
+<li> <a href="testUtils.ml">testUtils.ml</a> - utilities for printing ASTs & values
+<li> <a href="parse.ml">parse.ml</a> - uses your parser to produce Scheme ASTs
+<li> <a href="interpret.ml">interpret.ml</a> - uses your parser and
+  evaluator interpret Scheme expressions
+</ul>
+</li><li>Test Script - <a href="goTest.rb">goTest.rb</a> (does not
+test your SchemeTest.txt file -- you must do that manually)
+<ul>
+</ul>
+</li></ul>
+
+<h2>Part 1: Simple Scheme Programming</h2>
+
+Put your solution to this part in the file <tt>schemeTest.txt</tt>.
+<p>
+
+Implement the following functions in regular Scheme.  All of these
+functions should operate over integers and/or lists of integers.  The
+purpose of this part is just to make sure you understand Scheme before
+you try to start writing an interpreter for it. You will find that
+Scheme is very much the same as OCaml, but with different syntax, and
+with dynamic (rather than static), typing. You might find these <a
+href =
+"http://courses.cs.washington.edu/courses/cse341/04wi/lectures/12-scheme.html">lecture
+notes</a> useful.
+
+<ol>
+<li>Write a function <tt>double x</tt> that returns two times <tt>x</tt>.
+
+<li>Write a function <tt>powof2 x</tt> that returns true (which is written
+<tt>#t</tt> in Scheme) if and only if <tt>x</tt> is a power of 2.
+(Hint:  Use the functions <tt>/</tt> and <tt>mod</tt>.)
+
+<li>Write a function <tt>sum l</tt> that returns the sum of the
+    integer list <tt>l</tt>, using recursion.  <i>Hint:</i>  You can
+    use the function pair? to determine whether a  
+value is a cons cell or not; and in this problem, you can assume if  
+something is not a cons cell, then it's '().
+
+<li>Write a function <tt>applyToList f l</tt> that returns a new list
+    containing all the elements of <tt>l</tt>, in the same order, but
+    with <tt>f</tt> applied to them.  Your implementation should use
+    recursion.  You may <b>not</b> use Scheme's built-in map or
+    for-each functions in writing your map function.  Note applyToList
+    directly takes 2 arguments (i.e., it is not using currying).
+</ol>
+
+
+
+<h2>Part 2:  Parsing Scheme</h2>
+
+<p>
+Put your solution to this part in the top half of file <tt>scheme.ml</tt>.
+
+<p>
+Your next task is to write a <i>parser</i> for Scheme expressions, 
+which in this case will be
+a function that turns a string into a Scheme abstract syntax tree
+(AST).  Your parser will take as input a sequence of
+<i>tokens</i>, produced by a <i>scanner</i>, which are the terminals
+of the Scheme grammar, and output the Scheme AST.
+
+<p>
+We've supplied you with a function
+<tt>tokenize : string -> token list</tt> that acts as a scanner/lexer,
+converting the string input into a list of tokens,
+represented by the following data type:
+
+<pre>
+type token =
+  | Tok_Id of string
+  | Tok_Num of int
+  | Tok_String of string
+  | Tok_True
+  | Tok_False
+  | Tok_LParen
+  | Tok_RParen
+  | Tok_END
+</pre>
+
+For example, when called as <tt>tokenize "(foo (bar 3) 4
+\"baz\")"</tt>, the return value is<br>
+<tt>[Tok_LParen; Tok_Id "foo"; Tok_LParen; Tok_Id "bar"; Tok_Num 3; 
+Tok_RParen; Tok_Num 4; Tok_String "baz"; Tok_RParen]</tt>
+
+<p>
+<b>What to do</b>: You must write a function <tt>parse : token list ->
+ast</tt> that takes as input a list of tokens (returned from
+<tt>tokenize</tt>) and returns an AST. Once you have done this, you
+can run it using the code in the file <a href="parse.ml">parse.ml</a>.
+
+<p>You should use the idea of a <i>recursive descent parser</i>, as we
+discussed in class.  Thus we suggest you write two functions:
+<tt>parse_S</tt>, which parses the non-terminal <i>S</i> representing
+a single Scheme expression, and <tt>parse_L</tt>, which parses the 
+non-terminal <i>L</i> representing a list of Scheme expressions.
+
+The
+context free grammar for Scheme -- and notably for nonterminals
+<i>S</i> and <i>L</i> -- is given next, followed by the OCaml type
+definition <tt>ast</tt> of Scheme abstract syntax trees.
+
+<h3>Scheme Grammar</h3>
+
+<p>
+The grammar for Scheme expressions you need to support is particularly simple:
+
+<ul>
+<li>S -> <b>id</b> | <b>n</b> | <b>str</b> | <b>#t</b> | <b>#f</b> | <b>(</b> L <b>)</b> 
+<li>L -> S L | <i>epsilon</i>
+</ul>
+
+where
+
+<ul>
+<li><b>id</b> are Scheme identifiers.  Identifiers may contain upper- and
+lower-case letters, digits, <tt>=</tt>, <tt>*</tt>, <tt>+</tt>,
+<tt>/</tt>, <tt>&lt;</tt> <tt>&gt;</tt>, <tt>!</tt>, <tt>?</tt>, and
+<tt>-</tt>.  For example, valid identifiers are <tt>Foo</tt>,
+<tt>set!</tt>, <tt>&lt;three</tt>, and <tt>+=</tt>.  Identifiers may
+  not begin with a digit. These correspond to the <tt>Tok_Id</tt> token.
+Identifiers are distinguished from integers and strings by their first
+character.
+
+<li><b>n</b> are Integers (made up of digits). These correspond to the
+  <tt>Tok_Num</tt> token.
+  
+<li><b>str</b> are Strings (beginning and ending with quotes).
+For purposes of this project, only alphanumeric and whitespace 
+characters can appear within a string. These correspond to the
+  <tt>Tok_String</tt> token.
+  
+<li><b>#t</b> and <b>#f</b> are tokens representing true and
+  false. These correspond to the tokens <tt>Tok_True</tt> and
+  <tt>Tok_False</tt>, respectively.
+  
+<li><b>(</b> and <b>)</b> are tokens (marking the beginning and end of
+  a list); these correspond to the tokens <tt>Tok_LParen</tt> and
+  <tt>Tok_RParen</tt>, respectively.
+
+</ul>
+
+<h3>Scheme AST</h3>
+<p>
+For this project, Scheme expressions are represented using
+an AST (abstract syntax tree) defined using the following 
+OCaml data type:
+
+<pre>
+type ast =
+  | Id of string
+  | Num of int
+  | Bool of bool
+  | String of string
+  | List of ast list
+</pre>
+
+For example, the Scheme s-expression <tt>(foo (bar 3) 4 "baz")</tt>
+is represented by the AST <tt>List [Id "foo"; (List [Id "bar"; Num 3]);
+Num 4; String "baz"]</tt>.  Your AST nodes for strings should
+<i>not</i> include quotes.  For example, <tt>parse ["\"a\""]</tt>
+should return <tt>String "a"</tt>, i.e., a <tt>String</tt> constructed
+from a string with one character, <tt>a</tt>.
+
+
+<h2>Part 3: Scheme Interpreter </h2>
+
+For part 3 of this project, your task is to write a evaluator for 
+Scheme abstract syntax trees. This evaluator will form the basis of your Scheme
+interpreter.  Put the code for the Scheme interpreter is in the bottom
+part of <tt>scheme.ml</tt>.
+
+<p>
+<b>What you will do</b>: You will write a function <tt>eval</tt> that,
+given an <i>environment</i> and an AST, evaluates the expression
+corresponding to that AST in the given environment, producing a final
+<i>value</i>.  The type of <tt>eval</tt> is <tt>(string * value) list
+-> ast -> value</tt>, where the first argument is the environment, the
+second is the AST, and the result is a value. We present the OCaml
+definition (and meaning) of values and environments below.
+
+<p>
+<b>Note</b> that what you will implement for this part corresponds very
+closely to the <a href =
+"http://www.cs.umd.edu/class/fall2015/cmsc330/lectures/opsem.pdf">operational
+semantics for OCaml-like programs</a> give in lecture, so that may
+serve as a good reference (and this project may serve as a good way to
+understand that lecture better).
+
+<h3>Scheme Values </h3>
+
+<p> Your Scheme interpreter should represent the value of Scheme
+expressions using the following <tt>value</tt> user-variant data type:
+
+<pre>
+type value =
+  | Val_Num of int
+  | Val_Bool of bool
+  | Val_String of string
+  | Val_Null
+  | Val_Cons of value * value
+  | Val_Define of (string * value) list
+  | Val_Closure of ...
+</pre>
+where the part labeled ... is for you to fill in.  However, you <b>must not
+change</b> the part of <tt>value</tt> we have given you, because our
+grading scripts will look for exactly those constructors, with exactly
+those arguments as given, to test your interpreter.
+
+<p>
+When doing this project, be sure to keep straight the
+difference between textual entities that the programmer has written
+down (like the text "3") with the resulting value that your
+interpreter produces (<tt>Val_Num 3</tt>).
+
+<p>
+<h3>Scheme Environment </h3>
+
+Your interpreter will need to maintain an <i>environment</i> to 
+store bindings of values to symbols. The interpreter will represent
+the environment as an associative list of type 
+<tt>(string * value) list</tt>. How the associative list
+is organized is up to you.  The interpreter will need to maintain
+a top-level environment of all definitions encountered so
+far in the input program.
+
+<p>
+For example, <tt>eval [] (Num 3)</tt> should return <tt>Val_Num
+3</tt>, meaning that in an empty environment, an AST node containing 
+the number 3 evaluates to the integer 3.  
+Calling <tt>eval [("x", Val_Num 3)] (Id "x")</tt> should 
+also return <tt>Val_Num 3</tt>, since x is bound to 3 in the 
+environment used to evaluate x.
+
+<h3>Scheme Language Features</h3>
+
+Here we present the language features your Scheme interpreter needs to
+support.  
+
+<ul>
+<li>Basic Expressions
+
+<ul>
+
+<li>Values. Your evaluation function should evaluate
+  integers, booleans, and strings to the corresponding values.
+
+<li>Null.  For this project, we will vary slightly from
+    Scheme and make <tt>null</tt> the built-in keyword for the empty
+    list.  Thus <tt>null</tt> should evaluate to <tt>Val_null</tt>.  In
+    actual Scheme, <tt>null</tt>  is written <tt>'()</tt>.
+
+</ul>
+
+<p>
+<li>Functions Calls
+
+<ul>
+<li>In Scheme function calls appear as lists, where the name of the function
+is the first element in the list, and the remaining list arguments are the
+arguments passed to the function. E.g., <tt>(+ 1 2 3)</tt> calls the built-in
+<tt>+</tt> function and passes it three arguments, 1, 2, and 3.
+
+<li>Your implementation must support call-by-value, so that arguments are
+evaluated before they are passed to a closure.  For example, consider
+the following Scheme expression: <tt>(+ (- 1 2) 3)</tt>. The arguments
+to the + function must be first evaluated before they are passed to +.
+In this case, it means the expression  <tt>(- 1 2)</tt> must be
+evaluated first, and its resulting value passed as the first argument to +.
+
+</ul>
+<p>
+<li>Built-in Functions
+
+<ul>
+<li>  Your interpreter should support a number of built-in Scheme 
+  functions.  Some of these functions can take more than one argument,
+  but you don't have to implement them with currying. You can just
+  make these special cases inside your evaluator.
+
+<li> You do not have to treat primitive functions as first-class
+  values; they will only be invoked and applied to arguments
+  (and not passed as arguments or used as return values).
+
+<li> <tt>boolean?</tt>, <tt>number?</tt>, <tt>string?</tt>, 
+    <tt>pair?</tt>, and  <tt>null?</tt>.  
+    These built-in functions return true if their single argument is a
+    boolean, integer, string, cons cell, or null, respectively, and false
+    otherwise.
+
+<li> Integer operations. <tt>+</tt>, <tt>-</tt>, <tt>*</tt>, and <tt>=</tt> on
+    integers.  
+
+    <ul>
+    <li> <tt>+</tt> sums its arguments, and should accept one or more arguments.  
+
+    <li> <tt>-</tt> may take one or more of arguments. 
+    It subtracts its 2nd through last argument from
+    its first argument; given only one argument, it compute unary
+    negation.  For example, <tt>(- 3)</tt> evaluates to
+    <tt>Val_Num (-3)</tt>, while <tt>(- 4 3)</tt> evaluates to
+    <tt>Val_Num 1</tt> and <tt>(- 4 3 1)</tt> evaluates to
+    <tt>Val_Num 0</tt>.  
+
+    <li> <tt>*</tt> multiplies its arguments, and should accept one or more arguments.  
+
+    <li> <tt>=</tt> compares its two arguments and evaluates to either
+    <tt>Val_Bool true</tt> or <tt>Val_Bool false</tt>.  You may use
+    the OCaml = operator.
+    </ul>
+
+<li>If expressions. You should allow both <tt>(if <i>cond</i> <i>tr</i>
+<i>fl</i>)</tt>, which evaluates to <tt><i>tr</i></tt> if
+<tt><i>cond</i></tt> is true and <tt><i>fl</i></tt> otherwise, and 
+<tt>(if <i>cond</i> <i>tr</i>)</tt>, which evaluates to
+<tt>Val_Null</tt> if <tt><i>cond</i></tt> is false.
+
+<li> <tt>display</tt>.  Prints its single argument, which is either
+    a number or a string.  Do not add a trailing newline.  If a string,
+    do not include any quotes around the string when it is printed.
+    Display should return the value <tt>null</tt>.
+
+
+</ul>
+<p>
+<li>Lists
+
+<ul>
+<li> Your interpreter should support lists constructed from multiple
+calls to the <tt>cons</tt> function. The <tt>car</tt> and <tt>cdr</tt>
+functions may be used to extract the head and tail of a list.
+
+    <ul>
+    <li> <tt>cons</tt> - Here
+    <tt>(cons x y)</tt> should evaluate to the cons cell
+    <tt>Val_Cons(a, b)</tt>, where <tt>a</tt> and <tt>b</tt> are
+    whatever <tt>x</tt> and <tt>y</tt> evaluate to, respectively.
+
+    <li> <tt>car</tt> -
+    When applied to a cons cell <tt>Val_Cons(a, b)</tt>,
+    <tt>car</tt> returns <tt>a</tt>.
+
+    <li> <tt>cdr</tt> -
+    When applied to a cons cell <tt>Val_Cons(a, b)</tt>,
+    <tt>cdr</tt> returns <tt>b</tt>.
+    </ul>
+
+</ul>
+<p>
+<li>Top-level Definitions
+
+<ul>
+
+<li>Your evaluation function must maintain a top-level environment 
+  containing the values of variables that have been bound using the 
+  built-in <tt>define</tt> function.  For example, <tt>(define x y)</tt> 
+  will bind the value of <tt>y</tt> to the symbol <tt>x</tt>. 
+
+<li> The top-level environment is passed to the <tt>eval</tt> function 
+  used to evaluate Scheme expressions.  Scheme expressions containing 
+  unbound (free) variables may look in the top-level environment 
+  for values.  
+
+<li> You may assume <tt>define</tt> is used only at the top level, and 
+  not within the body of a function; we will not test your interpreter 
+  with any such examples.  You also do not need to handle cases where we 
+  shadow primitive operators.
+
+<li> The expression <tt>(define x ...)</tt> when evaluated returns a new 
+  top-level environment that contains the binding for <tt>x</tt>, as well
+  as all bindings in the current top-level environment.  
+
+<li> Future calls to <tt>eval</tt> at the top level must be made with the new 
+  top-level environment. Your implementation of <tt>eval</tt> must use the 
+  most recent binding for <tt>x</tt> within the top-level environment,
+  if <tt>x</tt> is a free variable.
+
+<li> Remember that <tt>define</tt> may be used to bind 
+different values (possibly with different type) to the same 
+identifier, causing shadowing.  When the value of a shadowed 
+identifier is looked up, we return its latest definition.  
+For instance:
+
+<pre>
+  (define x 1)
+  (+ x 2)  <-- produces 3
+  (define x 4)
+  (+ x 2)  <-- produces 6
+</pre>
+
+<li> The actual top-level environment in Scheme supports dynamic
+  scoping (where identifier bindings may be changed by <tt>define</tt>). 
+  For this project, your top-level environment will be like the OCaml
+  top-level environment, where identifier bindings do not change, but
+  may be shadowed by newer bindings to an identifier with the same 
+  name. 
+<li> You may assume that identifiers bound to user functions 
+  (lambda or dynamic) will not be shadowed (i.e., will only be
+  defined once). 
+
+</ul>
+<p>
+<li>Identifiers
+
+<ul>
+<li> When presented with an identifier, your
+interpreter needs to look it up.  The first place it should look it up
+is in the "local" environment, consisting of parameters of enclosing
+user-defined functions.  
+<li> If an identifier is not in the local environment, the interpreter
+should look it up in the top-level environment (the one that
+<tt>define</tt> uses).  
+<li> If an identifier is in neither environment, then it is unbound, 
+and trying to evaluate it should produce an error. Since we are 
+testing your code with only valid Scheme expressions, there will
+not be any unbound variables in the submit server test cases.
+<li> Scheme expressions use static lexical scoping to determine
+variable bindings in the local environment. For this project, 
+user functions defined with the "dynamic" keyword will use 
+dynamic scoping instead to determine where variables are bound
+in the local environment.
+
+</ul>
+<p>
+<li>User Defined Functions
+
+<ul>
+<li>You should support creating anonymous functions
+of one argument.  We will only test user-defined functions 
+called with a single argument (though functions may use currying).
+You need to support functions using both static (lexical) and dynamic
+scoping.  Both types of functions produce a Val_Closure value that
+you must define.
+
+<li>Lambda 
+
+<ul>
+<li> User-defined functions supporting static lexical scoping
+are defined using the <tt>lambda</tt> keyword. Function definitions
+must be of the form <tt>(lambda (x) body)</tt>, where x is the 
+formal parameter, and <body> contains the code for the function.
+Note x must be in a list, <tt>(lambda x body)</tt> is invalid syntax.
+The body of the function is a single expression; it does not have 
+to be a list. For instance, the user-defined function may be 
+returning a simple expression (e.g., 1, x).
+
+<li> To support static lexical scoping, your value for lambda
+<font color="green">must support closures.</font> I.e., the 
+function will need to be able to access values bound to identifiers
+not in the scope of the lambda expression, even if those values
+are bound to parameters of enclosing functions that have already
+returned.
+
+
+<li> The following example shows how user-defined functions 
+should evaluated:
+
+<pre>
+  let t = List [Id "define"; Id "next";
+    List [Id "lambda"; List [Id "x"]; List [Id "+"; Id "x"; Num 1]]];;
+  let (Val_Define newEnv) = eval env t;;
+  eval newEnv (List [Id "next"; Num 3]);;
+</pre>
+
+Here we define <tt>t</tt> to be the abstract syntax tree corresponding
+to the Scheme code <tt>(define next (lambda (x) (+ x 1)))</tt>.
+In evaluating <tt>t</tt>, we first evaluate the <tt>lambda</tt> to
+produce a closure.  Then we bind <tt>next</tt> to the closure.  The
+last evaluation line corresponds to the Scheme code <tt>(next 3)</tt>.
+Thus we look up <tt>next</tt> in the top-level environment to return
+the closure.  We evaluate the argument <tt>3</tt>, which produces <tt>Val_Num
+3</tt>.  Then we apply the closure to the argument to produce 4.
+
+</ul>
+
+<li>Dynamic
+
+<ul>
+<li> User-defined functions supporting dynamic scoping
+are defined using the <tt>dynamic</tt> keyword. The syntax
+is otherwise identical to that of <tt>lambda</tt>.
+
+<li> The value of a dynamic function is also stored as a <tt>Val_Closure</tt>
+for convenience, but it does not need to be able to access non-local
+variables. Instead, values for any free variables in the body of the
+<tt>dynamic</tt> expression should be looked up in the environment
+where the function is called, rather than where it is declared.
+(Hint, this behavior is similar to that of a closure with an empty
+environment).
+
+<li> The following example shows the difference between functions
+defined with lambda and dynamic:
+
+<pre>
+  (define x 1)
+  (define foo (lambda (y) (+ x y)))
+  (define bar (dynamic (y) (+ x y)))
+  (foo 2)  <-- produces 3
+  (bar 2)  <-- produces 3
+  (define x 4)
+  (foo 2)  <-- produces 3
+  (bar 2)  <-- produces 6
+</pre>
+
+</ul>
+<p>
+
+
+<li>There is one case where a lambda user-defined function foo 
+may use dynamic scoping. A free variable x in foo that is also 
+not in the top-level environment will not be saved in the closure 
+for foo. The function foo may still be valid, if a define expression
+is used to bind a value to x before foo is called.  In this case,
+the binding for x behaves as if foo used dynamic scoping.
+<p>
+This behavior is different from how OCaml's top-level environment
+works, and is a result of the requirement that a Scheme expression
+look up variable bindings in both the local and top-level environment
+(and that define can add bindings to the top-level environment).
+For OCaml, a free variable in foo that is not in the top-level
+environment will cause an Unbound Variable error immediately.
+<p>
+The public tests include an example of this situation. In the body
+of the user-defined lambda function bound to <tt>fact</tt> is a 
+recursive call to <tt>fact</tt>.  Similar code in OCaml would fail 
+unless a "let rec" was used instead of "let".  This code works 
+in Scheme by relying on the assumption <tt>fact</tt> will have 
+been added to the top-level environment using define by the time 
+the function is actually called.  
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+
+<p>
+
+<h2>Testing and Submission</h2>
+
+We will test your project by calling your parsing and evaluation
+functions directly, so be sure to give those functions the types we
+expect, as given above.  You can work on the interpreter and parser in
+any order, we will test each part independently.
+
+<p> You may assume that all input test cases are syntactically
+correct.  If the input Scheme code is not legal you may perform any
+action (e.g., exit, throw an exception).
+
+<p>All your code should be in two files, schemeTest.txt & scheme.ml.
+You can submit your project in two ways:
+
+<ul>
+<li>
+Submit your schemeTest.txt & scheme.ml files directly to the 
+<a href="http://submit.cs.umd.edu/">submit server</a>. 
+
+<ul>
+<li>
+You can submit multiple files by putting the files in a .zip archive first.
+On Windows you can select the two files, then right click to
+select the "Send to->Compressed (zipped) Folder" option
+to create a .zip archive.
+Once your files are in a single zip archive,
+bring up the upload dialog box by clicking on the 
+submit link in the column "web submission".
+Select your archive file using the "Browse" button, 
+then press the "Submit project!" button.  
+
+<p>
+<li>
+The submit server now allows multiple files (from 
+the same directory) to be selected.  
+Bring up the upload dialog box by clicking on the 
+submit link in the column "web submission".
+Browse to the directory containing your project
+files, then click on both schemeTest.txt and scheme.ml.
+Now press the "Submit project!" button.  
+</ul>
+
+<p>
+<img src="submit1.jpg">
+</p><p>
+
+
+</p><p>
+<img src="submit2.jpg">
+</p><p>
+
+
+</p><p>
+</p>
+
+<li>
+You may also submit directly by executing a Java program on a computer
+with Java and network access.  Use the submit.jar file 
+from the archive <a href="p4.zip">p4.zip</a>, 
+To submit, go to the directory containing your project, then either
+execute submit.rb by typing:
+ 
+</p><center>
+ 
+<tt>
+ruby submit.rb
+</tt>
+</center>
+<p>
+ 
+or use the java jar directly using the following command:
+</p><center>
+
+<tt>
+java -jar submit.jar
+</tt>
+</center>
+<p>
+
+You will be asked to enter your class account and password, then
+all files in the directory (and its subdirectories) will be
+put in a jar file and submitted to the submit server.  
+If your submission is successful you will see the message:
+</p><p> 
+
+</p><center>
+<tt>
+Successful submission #<submission_number> received for project 4
+</submission_number></tt>
+</center>
+<p>
+
+</p></li></ul>
+
+<h2>Academic Integrity</h2>
+
+<p>
+The Campus Senate has adopted a policy asking students to include the
+following statement on each assignment in every course: "I pledge on
+my honor that I have not given or received any unauthorized assistance
+on this assignment."  Consequently your program is requested to
+contain this pledge in a comment near the top.
+
+<p>
+Please <b>carefully read</b> the academic honesty section of the
+course syllabus.  <b>Any evidence</b> of impermissible cooperation on
+projects, use of disallowed materials or resources, or unauthorized
+use of computer accounts, <b>will be submitted</b> to the Student
+Honor Council, which could result in an XF for the course, or
+suspension or expulsion from the University.  Be sure you understand
+what you are and what you are not permitted to do in regards to
+academic integrity when it comes to project assignments.  These
+policies apply to all students, and the Student Honor Council does not
+consider lack of knowledge of the policies to be a defense for
+violating them.  Full information is found in the course
+syllabus---please review it at this time.
+
+<!--#include virtual="../footer.html" -->

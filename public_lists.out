@@ -1,0 +1,8 @@
+% (cons 1 null)
+(cons 1 null)
+% (cons 2 (cons 3 null))
+(cons 2 (cons 3 null))
+% (car (cons 4 (cons 5 null)))
+4
+% (cdr (cons 6 (cons 7 null)))
+(cons 7 null)

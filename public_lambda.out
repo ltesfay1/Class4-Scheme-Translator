@@ -1,0 +1,16 @@
+% (define next (lambda (y) (+ y 1)))
+<define>
+% (next 1)
+2
+% (next 2)
+3
+% (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1))))))
+<define>
+% (fact 3)
+6
+% (fact 5)
+120
+% (define foo (lambda (x) (lambda (y) (+ x y))))
+<define>
+% ((foo 3) 4)
+7
